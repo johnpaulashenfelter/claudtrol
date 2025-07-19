@@ -1,5 +1,17 @@
 #!/usr/bin/env bun
 
+function checkBunAvailable() {
+  try {
+    Bun.spawnSync(["bun", "--version"], { stdout: "ignore", stderr: "ignore" });
+    return true;
+  } catch {
+    console.warn("⚠️  Warning: 'bun' is not installed or not in PATH.");
+    console.warn("    Some commands may fail. Install bun via https://bun.sh or 'brew install bun'.\n");
+    return false;
+  }
+}
+
+const hasBun = checkBunAvailable();
 const args = process.argv.slice(2);
 const command = args[0];
 
@@ -30,14 +42,17 @@ switch (normalized) {
     break;
 
   case "prune-session":
+    if (!hasBun) break;
     await runPreferred("claude-prune", args.slice(1));
     break;
 
   case "ccusage":
+    if (!hasBun) break;
     await runPreferred("ccusage", args.slice(1));
     break;
 
   case "update":
+    if (!hasBun) break;
     await forceGlobalInstall(["claude-prune@latest", "ccusage@latest"]);
     break;
 

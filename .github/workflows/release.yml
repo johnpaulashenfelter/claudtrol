@@ -1,0 +1,26 @@
+name: Release and Update Homebrew Formula
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout claudtrol source
+        uses: actions/checkout@v4
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v1
+        with:
+          generate_release_notes: true
+
+      - name: Update Homebrew formula
+        uses: mislav/bump-homebrew-formula-action@v3
+        with:
+          formula-name: claudtrol
+          homebrew-tap: johnpaulashenfelter/homebrew-tools
+        env:
+          COMMITTER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
