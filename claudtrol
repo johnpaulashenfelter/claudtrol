@@ -11,7 +11,19 @@ function checkBunAvailable() {
   }
 }
 
+function checkUvAvailable() {
+  try {
+    Bun.spawnSync(["uv", "--version"], { stdout: "ignore", stderr: "ignore" });
+    return true;
+  } catch {
+    console.warn("⚠️  Warning: 'uv' is not installed or not in PATH.");
+    console.warn("    files-to-prompt command will fail. Install uv via https://docs.astral.sh/uv/getting-started/installation/\n");
+    return false;
+  }
+}
+
 const hasBun = checkBunAvailable();
+const hasUv = checkUvAvailable();
 const args = process.argv.slice(2);
 const command = args[0];
 
@@ -55,6 +67,7 @@ switch (normalized) {
     break;
 
   case "files-to-prompt":
+    if (!hasUv) break;
     await runUvx("files-to-prompt", args.slice(1));
     break;
 
