@@ -11,7 +11,19 @@ function checkBunAvailable() {
   }
 }
 
+function checkUvAvailable() {
+  try {
+    Bun.spawnSync(["uv", "--version"], { stdout: "ignore", stderr: "ignore" });
+    return true;
+  } catch {
+    console.warn("⚠️  Warning: 'uv' is not installed or not in PATH.");
+    console.warn("    files-to-prompt command will fail. Install uv via https://docs.astral.sh/uv/getting-started/installation/\n");
+    return false;
+  }
+}
+
 const hasBun = checkBunAvailable();
+const hasUv = checkUvAvailable();
 const args = process.argv.slice(2);
 const command = args[0];
 
@@ -21,6 +33,7 @@ if (!command || ["--help", "-h"].includes(command)) {
 Available commands:
   prune-session, prune     Run claude-prune (prefers live via bunx, falls back to global)
   ccusage, usage           Run ccusage (same behavior)
+  files-to-prompt, concat  Run files-to-prompt via uvx
   update                   Force install latest versions globally (for offline use)
   hello                    Test command
 `);
@@ -32,6 +45,8 @@ const normalized = {
   "prune": "prune-session",
   "ccusage": "ccusage",
   "usage": "ccusage",
+  "files-to-prompt": "files-to-prompt",
+  "concat": "files-to-prompt",
   "update": "update",
   "hello": "hello",
 }[command];
@@ -49,6 +64,11 @@ switch (normalized) {
   case "ccusage":
     if (!hasBun) break;
     await runPreferred("ccusage", args.slice(1));
+    break;
+
+  case "files-to-prompt":
+    if (!hasUv) break;
+    await runUvx("files-to-prompt", args.slice(1));
     break;
 
   case "update":
@@ -102,4 +122,19 @@ async function forceGlobalInstall(packages: string[]) {
   }
 
   console.log("✅ Tools installed for offline use.");
+}
+
+// ---- Run command via uvx ----
+
+async function runUvx(pkg: string, restArgs: string[]) {
+  const proc = Bun.spawnSync(["uvx", pkg, ...restArgs], {
+    stdout: "inherit",
+    stderr: "inherit",
+    stdin: "inherit",
+  });
+
+  if (proc.exitCode !== 0) {
+    console.error(`❌ Failed to run "${pkg}" via uvx.`);
+    process.exit(proc.exitCode ?? 1);
+  }
 }
