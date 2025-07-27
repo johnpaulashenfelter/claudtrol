@@ -21,6 +21,7 @@ if (!command || ["--help", "-h"].includes(command)) {
 Available commands:
   prune-session, prune     Run claude-prune (prefers live via bunx, falls back to global)
   ccusage, usage           Run ccusage (same behavior)
+  files-to-prompt, concat  Run files-to-prompt via uvx
   update                   Force install latest versions globally (for offline use)
   hello                    Test command
 `);
@@ -32,6 +33,8 @@ const normalized = {
   "prune": "prune-session",
   "ccusage": "ccusage",
   "usage": "ccusage",
+  "files-to-prompt": "files-to-prompt",
+  "concat": "files-to-prompt",
   "update": "update",
   "hello": "hello",
 }[command];
@@ -49,6 +52,10 @@ switch (normalized) {
   case "ccusage":
     if (!hasBun) break;
     await runPreferred("ccusage", args.slice(1));
+    break;
+
+  case "files-to-prompt":
+    await runUvx("files-to-prompt", args.slice(1));
     break;
 
   case "update":
@@ -102,4 +109,19 @@ async function forceGlobalInstall(packages: string[]) {
   }
 
   console.log("✅ Tools installed for offline use.");
+}
+
+// ---- Run command via uvx ----
+
+async function runUvx(pkg: string, restArgs: string[]) {
+  const proc = Bun.spawnSync(["uvx", pkg, ...restArgs], {
+    stdout: "inherit",
+    stderr: "inherit",
+    stdin: "inherit",
+  });
+
+  if (proc.exitCode !== 0) {
+    console.error(`❌ Failed to run "${pkg}" via uvx.`);
+    process.exit(proc.exitCode ?? 1);
+  }
 }
