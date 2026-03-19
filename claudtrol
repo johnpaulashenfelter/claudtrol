@@ -34,6 +34,7 @@ Available commands:
   prune-session, prune     Run claude-prune (prefers live via bunx, falls back to global)
   ccusage, usage           Run ccusage (same behavior)
   files-to-prompt, concat  Run files-to-prompt via uvx
+  cc-safe,ccsafe           Run cc-safe scan
   update                   Force install latest versions globally (for offline use)
   hello                    Test command
 `);
@@ -47,6 +48,8 @@ const normalized = {
   "usage": "ccusage",
   "files-to-prompt": "files-to-prompt",
   "concat": "files-to-prompt",
+  "cc-safe": "cc-safe",
+  "ccsafe": "cc-safe",
   "update": "update",
   "hello": "hello",
 }[command];
@@ -69,6 +72,11 @@ switch (normalized) {
   case "files-to-prompt":
     if (!hasUv) break;
     await runUvx("files-to-prompt", args.slice(1));
+    break;
+
+  case "cc-safe":
+    if (!hasBun) break;
+    await runPreferred("cc-safe", args.slice(1));
     break;
 
   case "update":
