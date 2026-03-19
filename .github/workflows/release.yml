@@ -22,6 +22,6 @@ jobs:
         with:
           formula-name: claudtrol
           homebrew-tap: johnpaulashenfelter/homebrew-tools
-          commit-to: main
+          base-branch: main
         env:
           COMMITTER_TOKEN: ${{ secrets.HOMEBREW_GITHUB_API_TOKEN }}
